@@ -18,7 +18,10 @@ import com.livedata.covid19.data.repository.NetworkState
 import com.livedata.covid19.models.MainActivityViewModel
 import com.livedata.covid19.vo.CoronaResponse
 import kotlinx.android.synthetic.main.activity_main.*
+import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
+import org.eazegraph.lib.models.ValueLinePoint
+import org.eazegraph.lib.models.ValueLineSeries
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         val apiService : ApiService = ApiClient.getClient()
         coronaRepository =
@@ -56,16 +60,63 @@ class MainActivity : AppCompatActivity() {
         tv_total_deaths.text = it.deaths.toString()
         tv_affected_countries.text = it.affectedCountries.toString()
         tv_today_deaths.text = it.todayDeaths.toString()
-        pie_chart.addPieSlice(PieModel("Cases",
-            Integer.parseInt(tv_cases.text.toString()).toFloat(), Color.parseColor("#FFA726")))
-        pie_chart.addPieSlice(PieModel("Recovered",
-            Integer.parseInt(tv_recovered.text.toString()).toFloat(), Color.parseColor("#66BB6A")))
-        pie_chart.addPieSlice(PieModel("Deaths",
-            Integer.parseInt(tv_total_deaths.text.toString()).toFloat(), Color.parseColor("#EF5350")))
-        pie_chart.addPieSlice(PieModel("Active",
-            Integer.parseInt(tv_active.text.toString()).toFloat(), Color.parseColor("#29B6F6")))
+        pie_chart.addPieSlice(
+            PieModel(
+                "Cases",
+                Integer.parseInt(tv_cases.text.toString()).toFloat(), Color.parseColor("#FFA726")
+            )
+        )
+        pie_chart.addPieSlice(
+            PieModel(
+                "Recovered",
+                Integer.parseInt(tv_recovered.text.toString()).toFloat(),
+                Color.parseColor("#66BB6A")
+            )
+        )
+        pie_chart.addPieSlice(
+            PieModel(
+                "Deaths",
+                Integer.parseInt(tv_total_deaths.text.toString()).toFloat(),
+                Color.parseColor("#EF5350")
+            )
+        )
+        pie_chart.addPieSlice(
+            PieModel(
+                "Active",
+                Integer.parseInt(tv_active.text.toString()).toFloat(), Color.parseColor("#29B6F6")
+            )
+        )
 
         pie_chart.startAnimation()
+        bar_chart.addBar(
+            BarModel(
+                "Cases",
+                Integer.parseInt(tv_cases.text.toString()).toFloat(),
+                Color.parseColor("#FFA726")
+            )
+        )
+        bar_chart.addBar(
+            BarModel(
+                "Recovered",
+                Integer.parseInt(tv_recovered.text.toString()).toFloat(),
+                Color.parseColor("#66BB6A")
+            )
+        )
+        bar_chart.addBar(
+            BarModel(
+                "Deaths",
+                Integer.parseInt(tv_total_deaths.text.toString()).toFloat(),
+                Color.parseColor("#EF5350")
+            )
+        )
+        bar_chart.addBar(
+            BarModel(
+                "Active",
+                Integer.parseInt(tv_active.text.toString()).toFloat(),
+                Color.parseColor("#29B6F6")
+            )
+        )
+        bar_chart.startAnimation()
 
     }
     private fun getViewModel(cases : Int, active : Int): MainActivityViewModel {
