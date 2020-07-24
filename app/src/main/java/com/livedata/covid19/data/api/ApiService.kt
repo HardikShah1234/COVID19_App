@@ -7,6 +7,7 @@ import com.livedata.covid19.vo.CountriesResponseItem
 import io.reactivex.Observable
 import io.reactivex.Single
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -16,5 +17,5 @@ interface ApiService{
     fun getCoronaData(@Query("cases") cases : Int, @Query("active") active: Int): Single<CoronaResponse>
 
     @GET("v2/countries/")
-    fun getCountries(@Query("country") country : String): Single<CountriesResponseItem>
+    fun getCountries(): Single<CountriesResponse>
 }

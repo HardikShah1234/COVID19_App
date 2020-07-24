@@ -1,46 +1,51 @@
 package com.livedata.covid19.data.repository
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.paging.PageKeyedDataSource
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.livedata.covid19.data.api.ApiService
-import com.livedata.covid19.data.api.FIRST_PAGE
 import com.livedata.covid19.vo.CountriesResponse
 import com.livedata.covid19.vo.CountriesResponseItem
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import okhttp3.ResponseBody
+import retrofit2.Response
 
-@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-class CountryDataSource(private val apiService: ApiService, private val compositeDisposable: CompositeDisposable) : PageKeyedDataSource<Int, CountriesResponseItem>() {
-    private var page = FIRST_PAGE
-    private var country = ""
-    val networkState : MutableLiveData<NetworkState> = MutableLiveData()
-    override fun loadInitial(
-        params: LoadInitialParams<Int>,
-        callback: LoadInitialCallback<Int, CountriesResponseItem>
-    ) {
+class CountryDataSource(
+    private val apiService: ApiService,
+    private val compositeDisposable: CompositeDisposable
+) {
 
-        networkState.postValue(NetworkState.LOADING)
-        compositeDisposable.add(apiService.getCountries("country").subscribeOn(Schedulers.io()).subscribe({
-            callback.onResult(ArrayList<CountriesResponseItem>(),0,null)
-            networkState.postValue(NetworkState.LOADING)
-        },{
-            networkState.postValue(NetworkState.ERROR)
-            Log.e("CountryDataSource" , it.message)
-        }))
-    }
+    private val _networkState = MutableLiveData<NetworkState>()
+    val networkState: LiveData<NetworkState>
+        get() = _networkState
 
-    override fun loadAfter(
-        params: LoadParams<Int>,
-        callback: LoadCallback<Int, CountriesResponseItem>
-    ) {
+    private val _downloadedCountriesDataResponse = MutableLiveData<CountriesResponse>()
+    val downloadedCountryResponse: LiveData<CountriesResponse>
+        get() = _downloadedCountriesDataResponse
 
-    }
+    fun fetchCountryDetails() {
+        _networkState.postValue(NetworkState.LOADING)
 
-    override fun loadBefore(
-        params: LoadParams<Int>,
-        callback: LoadCallback<Int, CountriesResponseItem>
-    ) {
+        try {
+            compositeDisposable.add(
+                apiService.getCountries().subscribeOn(Schedulers.io()).subscribe({
+                    _downloadedCountriesDataResponse.postValue(it)
+                    _networkState.postValue(NetworkState.LOADED)
+//                val gson = GsonBuilder().create()
+//                val countriesData : List<CountriesResponse> = gson.fromJson(it.toString(), Array<CountriesResponse>::class.java).toList()
+                }, {
+                    _networkState.postValue(NetworkState.ERROR)
+                    Log.e("FetchCountryDetails", it.message.toString())
+                })
+            )
 
+        } catch (e: Exception) {
+
+        }
     }
 }
+
+

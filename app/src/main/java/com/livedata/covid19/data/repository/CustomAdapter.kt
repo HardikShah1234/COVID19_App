@@ -6,122 +6,93 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Filter
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.livedata.covid19.R
 import com.livedata.covid19.UI.CountryWiseDataActivity
+import com.livedata.covid19.vo.CountriesResponse
 import com.livedata.covid19.vo.CountriesResponseItem
+import com.livedata.covid19.vo.CountryInfo
 import kotlinx.android.synthetic.main.flag_list.view.*
 import kotlinx.android.synthetic.main.network_state_item.view.*
 
-class CustomAdapter(public val context: Context) :
-    PagedListAdapter<CountriesResponseItem, RecyclerView.ViewHolder>(CountryDiffCallback()) {
+class CustomAdapter(public val context: Context, private val countriesResponse: CountriesResponse) :
+    RecyclerView.Adapter<CustomAdapter.MyViewHolder>() {
+    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+        var image: ImageView
+        var cv_tv_country_name: TextView
+
+        init {
+            image = itemView.cv_iv_country_flag
+            cv_tv_country_name = itemView.cv_tv_country_name
+
+        }
+    }
 
     val VIEW_TYPE = 1
     val NETWORK_VIEW_TYPE = 2
-    private var networkState : NetworkState? = null
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val view : View
+    var searchableList: ArrayList<CountriesResponse> = arrayListOf()
+    val countries = ArrayList<CountriesResponse>()
+    private var onNothingFound: (() -> Unit)? = null
 
-        if (viewType == VIEW_TYPE){
-            view = layoutInflater.inflate(R.layout.flag_list, parent, true)
-            return FlagItemViewHolder(view)
-        } else {
-            view = layoutInflater.inflate(R.layout.network_state_item,parent,true)
-            return NetworkStateItemViewHolder(view)
-        }
-    }
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (getItemViewType(position) == VIEW_TYPE){
-            (holder as FlagItemViewHolder).bind(getItem(position), context)
-        } else {
-            (holder as NetworkStateItemViewHolder).bind(networkState)
-        }
-    }
-
-    private fun hasExtraRow():Boolean {
-        return networkState != null && networkState != NetworkState.LOADED
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+        var itemView = LayoutInflater.from(context).inflate(R.layout.flag_list, parent, false)
+        return MyViewHolder(itemView)
     }
 
     override fun getItemCount(): Int {
-        return super.getItemCount() + if (hasExtraRow()) 1 else 0
+        return countriesResponse.size
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return if (hasExtraRow() && position == itemCount - 1) {
-            NETWORK_VIEW_TYPE
-        } else {
-            VIEW_TYPE
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        Glide.with(context).load(countriesResponse[position].countryInfo.flag).into(holder.image)
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, CountryWiseDataActivity::class.java)
+            context.startActivity(intent)
         }
+        holder.cv_tv_country_name.text = countriesResponse[position].country
     }
 
-    class CountryDiffCallback : DiffUtil.ItemCallback<CountriesResponseItem>(){
-        override fun areItemsTheSame(
-            oldItem: CountriesResponseItem,
-            newItem: CountriesResponseItem
-        ): Boolean {
-            return oldItem.country == newItem.country
-        }
-
-        override fun areContentsTheSame(
-            oldItem: CountriesResponseItem,
-            newItem: CountriesResponseItem
-        ): Boolean {
-            return oldItem == newItem
-        }
-
-    }
-
-    class FlagItemViewHolder (view: View) : RecyclerView.ViewHolder(view){
-
-        fun bind(countriesResponseItem: CountriesResponseItem?, context: Context){
-            itemView.cv_tv_country_name.text = countriesResponseItem?.country
-
-            Glide.with(itemView.context).load(countriesResponseItem?.flag).into(itemView.cv_iv_country_flag)
-            itemView.setOnClickListener {
-                val intent = Intent(context, CountryWiseDataActivity::class.java)
-                context.startActivity(intent)
+    fun getFilter(): Filter {
+        return object : Filter() {
+            private val filterResults = FilterResults()
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                searchableList.clear()
+                if (constraint.isNullOrBlank()) {
+                    searchableList.addAll(countries)
+                } else {
+                    val filterPattern = constraint.toString().toLowerCase().trim { it <= ' ' }
+                    for (item in 0..countries.size) {
+                        if (countries[item].get(countries.size).country!!.toLowerCase()
+                                .contains(filterPattern)
+                        ) {
+                            searchableList.add(countries[item])
+                        }
+                    }
+                }
+                return filterResults.also {
+                    it.values = countries
+                }
             }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                if (searchableList.isNullOrEmpty())
+                    onNothingFound?.invoke()
+                notifyDataSetChanged()
+            }
+
         }
     }
 
-    class NetworkStateItemViewHolder (view: View) : RecyclerView.ViewHolder(view){
-        fun bind(networkState: NetworkState?){
-            if (networkState != null && networkState == NetworkState.LOADING){
-                itemView.arc_loader_network.visibility = View.VISIBLE
-            } else {
-                itemView.arc_loader_network.visibility = View.GONE
-            }
-            if (networkState != null && networkState == NetworkState.ERROR){
-                itemView.tv_error_message_item.visibility = View.VISIBLE
-                itemView.tv_error_message_item.text = networkState.msg
-            } else if (networkState != null && networkState == NetworkState.ENDLIST){
-                itemView.tv_error_message_item.visibility = View.VISIBLE
-                itemView.tv_error_message_item.text = networkState.msg
-            } else {
-                itemView.tv_error_message_item.visibility = View.GONE
-            }
-        }
-    }
-
-    fun setNetworkState(newNetworkState: NetworkState) {
-        val previousState = this.networkState
-        val hadExtraRow = hasExtraRow()
-        this.networkState = newNetworkState
-        val hasExtraRow = hasExtraRow()
-
-        if (hadExtraRow != hasExtraRow) {
-            if (hadExtraRow){
-                notifyItemRemoved(super.getItemCount())
-            } else {
-                notifyItemInserted(super.getItemCount())
-            }
-        } else if (hasExtraRow && previousState != newNetworkState) {
-            notifyItemChanged(itemCount - 1)
-        }
+    override fun getItemId(position: Int): Long {
+        return countries[position].size.toLong()
     }
 }
