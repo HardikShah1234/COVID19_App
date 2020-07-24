@@ -9,4 +9,4 @@ __________________________
 
 ### Screenshots
 ___________________________________________
-![WhatsApp Image 2020-07-24 at 8 33 28 PM](https://user-images.githubusercontent.com/47896958/88424854-9beafa80-cdee-11ea-8d81-f2bcce55ddda.jpeg),![WhatsApp Image 2020-07-24 at 7 55 12 AM](https://user-images.githubusercontent.com/47896958/88426831-1ff2b180-cdf2-11ea-9e4a-8a39dccb570d.jpeg)
+![WhatsApp Image 2020-07-24 at 8 33 28 PM](https://user-images.githubusercontent.com/47896958/88424854-9beafa80-cdee-11ea-8d81-f2bcce55ddda.jpeg),![WhatsApp Image 2020-07-24 at 7 55 12 AM (1)](https://user-images.githubusercontent.com/47896958/88427176-b4f5aa80-cdf2-11ea-8a1a-9f3c12cc5f01.jpeg)
