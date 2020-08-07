@@ -3,9 +3,12 @@ package com.livedata.covid19.UI
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -20,8 +23,6 @@ import com.livedata.covid19.vo.CoronaResponse
 import kotlinx.android.synthetic.main.activity_main.*
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
-import org.eazegraph.lib.models.ValueLinePoint
-import org.eazegraph.lib.models.ValueLineSeries
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,15 +32,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
-        val apiService : ApiService = ApiClient.getClient()
+        setSupportActionBar(findViewById(R.id.my_toolbar1))
+        getSupportActionBar()?.setDisplayShowTitleEnabled(false)
+        val apiService: ApiService = ApiClient.getClient()
         coronaRepository =
             CoronaDetailsRepository(
                 apiService
             )
 
-        viewModel = getViewModel(1,1)
+        viewModel = getViewModel(1, 1)
         viewModel.coronaDetails.observe(this, Observer {
             bindUI(it)
         })
@@ -50,8 +51,33 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when (item.itemId) {
+            R.id.menu_share -> {
+                val shareIntent = Intent()
+                shareIntent.action = Intent.ACTION_SEND
+                shareIntent.type = "text/plain"
+                shareIntent.putExtra(
+                    Intent.EXTRA_TEXT,
+                    "Cases - " + viewModel.coronaDetails.value?.cases.toString() + System.lineSeparator() + "Recovered - " + viewModel.coronaDetails.value?.recovered.toString() + System.lineSeparator() + "Critical - " + viewModel.coronaDetails.value?.critical.toString() + System.lineSeparator() + "Active - " + viewModel.coronaDetails.value?.active.toString() + System.lineSeparator() + "Today Cases - " + viewModel.coronaDetails.value?.todayCases.toString() + System.lineSeparator() + "Total Deaths - " + viewModel.coronaDetails.value?.deaths.toString() + System.lineSeparator() + "Today Deaths - " + viewModel.coronaDetails.value?.todayDeaths.toString() + System.lineSeparator() + "Affected Countries - " + viewModel.coronaDetails.value?.affectedCountries.toString()
+                )
+                this.startActivity(Intent.createChooser(shareIntent, getString(R.string.Send)))
+            }
+            R.id.menu_settings -> Toast.makeText(applicationContext, "Settings", Toast.LENGTH_SHORT)
+                .show()
+            R.id.menu_exit -> finish()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     @SuppressLint("Range")
-    fun bindUI(it: CoronaResponse){
+    fun bindUI(it: CoronaResponse) {
         tv_cases.text = it.cases.toString()
         tv_recovered.text = it.recovered.toString()
         tv_active.text = it.active.toString()
@@ -119,7 +145,8 @@ class MainActivity : AppCompatActivity() {
         bar_chart.startAnimation()
 
     }
-    private fun getViewModel(cases : Int, active : Int): MainActivityViewModel {
+
+    private fun getViewModel(cases: Int, active: Int): MainActivityViewModel {
         return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                 return MainActivityViewModel(
@@ -128,11 +155,11 @@ class MainActivity : AppCompatActivity() {
                     active
                 ) as T
             }
-            
+
         })[MainActivityViewModel::class.java]
     }
 
     fun trackCountries(view: View) {
-        Intent(this,Countries::class.java).also { view.context.startActivity(it) }
+        Intent(this, Countries::class.java).also { view.context.startActivity(it) }
     }
 }

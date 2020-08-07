@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">COVID19</string>
+    <string name="Send">Send Via</string>
 </resources>

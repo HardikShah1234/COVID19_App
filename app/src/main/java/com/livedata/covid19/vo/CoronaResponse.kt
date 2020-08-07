@@ -1,8 +1,6 @@
 package com.livedata.covid19.vo
 
 
-import com.google.gson.annotations.SerializedName
-
 data class CoronaResponse(
     val active: Int,
     val affectedCountries: Int,

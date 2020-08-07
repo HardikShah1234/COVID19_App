@@ -1,18 +1,15 @@
 package com.livedata.covid19.UI
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
-import com.google.gson.GsonBuilder
 import com.livedata.covid19.R
 import com.livedata.covid19.data.api.ApiClient
 import com.livedata.covid19.data.api.ApiService
@@ -20,11 +17,7 @@ import com.livedata.covid19.data.repository.CountryDetailsRepository
 import com.livedata.covid19.data.repository.CustomAdapter
 import com.livedata.covid19.data.repository.NetworkState
 import com.livedata.covid19.models.CountriesViewModel
-import com.livedata.covid19.vo.CountriesResponse
-import com.livedata.covid19.vo.CountriesResponseItem
 import kotlinx.android.synthetic.main.activity_countries.*
-import okhttp3.ResponseBody
-import retrofit2.Response
 
 @Suppress("UNCHECKED_CAST")
 class Countries : AppCompatActivity() {

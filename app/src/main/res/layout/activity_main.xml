@@ -4,27 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#BCBCDD"
     tools:context=".UI.MainActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+
+    </androidx.appcompat.widget.Toolbar>
 
     <ImageView
         android:id="@+id/iv_logo"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:src="@drawable/bluelogo"
+        android:layout_below="@id/my_toolbar1"
         android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"/>
+        android:layout_marginRight="20dp"
+        android:src="@drawable/bluelogo" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_graph"
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:layout_below="@id/iv_logo"
-        android:layout_marginRight="20dp"
+        android:layout_centerVertical="true"
         android:layout_marginLeft="20dp"
-        app:cardElevation="10dp"
         android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
         app:cardCornerRadius="5dp"
-        android:layout_centerVertical="true">
-        
+        app:cardElevation="10dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -34,47 +46,49 @@
                 android:id="@+id/bar_chart"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="5dp"
-                android:layout_marginLeft="10dp"
-                app:egFixedBarWidth="true"
                 app:egBarWidth="20dp"
+                app:egFixedBarWidth="true"
                 app:egLegendHeight="40dp" />
 
             <org.eazegraph.lib.charts.PieChart
                 android:id="@+id/pie_chart"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:visibility="gone"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:layout_marginLeft="10dp" />
+                android:layout_weight="1"
+                android:visibility="gone" />
 
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_deaths"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/btn_track"
-        android:layout_marginRight="20dp"
+        android:layout_below="@id/cv_graph"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="10dp"
-        app:cardElevation="10dp"
+        android:layout_marginRight="20dp"
         app:cardCornerRadius="5dp"
-        android:layout_below="@id/cv_graph">
+        app:cardElevation="10dp">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <com.leo.simplearcloader.SimpleArcLoader
                 android:id="@+id/loader"
-                android:visibility="gone"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_centerInParent="true"
+                android:visibility="gone"
                 app:arc_style="simple_arc">
 
             </com.leo.simplearcloader.SimpleArcLoader>
@@ -373,12 +387,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_margin="20dp"
+        android:onClick="trackCountries"
         android:text="Track Countries"
         android:textAllCaps="false"
-        android:onClick="trackCountries"
         android:textSize="18dp" />
-
-
 
 
 </RelativeLayout>

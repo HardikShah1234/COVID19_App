@@ -5,26 +5,19 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Filter
+import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.view.menu.ActionMenuItemView
-import androidx.paging.PagedListAdapter
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.livedata.covid19.R
 import com.livedata.covid19.UI.CountryWiseDataActivity
 import com.livedata.covid19.vo.CountriesResponse
-import com.livedata.covid19.vo.CountriesResponseItem
-import com.livedata.covid19.vo.CountryInfo
 import kotlinx.android.synthetic.main.flag_list.view.*
-import kotlinx.android.synthetic.main.network_state_item.view.*
 
 class CustomAdapter(public val context: Context, private val countriesResponse: CountriesResponse) :
-    RecyclerView.Adapter<CustomAdapter.MyViewHolder>() {
+    RecyclerView.Adapter<CustomAdapter.MyViewHolder>(), Filterable {
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var image: ImageView
@@ -55,13 +48,14 @@ class CustomAdapter(public val context: Context, private val countriesResponse: 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         Glide.with(context).load(countriesResponse[position].countryInfo.flag).into(holder.image)
         holder.itemView.setOnClickListener {
-            val intent = Intent(context, CountryWiseDataActivity::class.java)
+            val intent =
+                Intent(context, CountryWiseDataActivity::class.java).putExtra("position", position)
             context.startActivity(intent)
         }
         holder.cv_tv_country_name.text = countriesResponse[position].country
     }
 
-    fun getFilter(): Filter {
+    override fun getFilter(): Filter {
         return object : Filter() {
             private val filterResults = FilterResults()
             override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -80,6 +74,7 @@ class CustomAdapter(public val context: Context, private val countriesResponse: 
                 }
                 return filterResults.also {
                     it.values = countries
+                    it.count = countries.size
                 }
             }
 
