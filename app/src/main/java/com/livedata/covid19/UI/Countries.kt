@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.livedata.covid19.R
 import com.livedata.covid19.data.api.ApiClient
 import com.livedata.covid19.data.api.ApiService
@@ -17,6 +19,8 @@ import com.livedata.covid19.data.repository.CountryDetailsRepository
 import com.livedata.covid19.data.repository.CustomAdapter
 import com.livedata.covid19.data.repository.NetworkState
 import com.livedata.covid19.models.CountriesViewModel
+import com.livedata.covid19.vo.CountriesResponse
+import com.livedata.covid19.vo.CountriesResponseItem
 import kotlinx.android.synthetic.main.activity_countries.*
 
 @Suppress("UNCHECKED_CAST")
@@ -26,6 +30,9 @@ class Countries : AppCompatActivity() {
     private lateinit var viewModel: CountriesViewModel
     private lateinit var countryDetailsRepository: CountryDetailsRepository
     lateinit var countryAdapter: CustomAdapter
+
+    var country: ArrayList<CountriesResponse>? = null
+    var list_country = ArrayList<CountriesResponse>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +54,6 @@ class Countries : AppCompatActivity() {
 
         rv_countries.layoutManager = gridLayoutManager
         rv_countries.setHasFixedSize(true)
-
 
         viewModel.countryDetails.observe(this, Observer {
             countryAdapter = CustomAdapter(this, it)
@@ -73,7 +79,7 @@ class Countries : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                countryAdapter.getFilter().filter(s)
+                countryAdapter.getFilter().filter(s.toString())
                 countryAdapter.notifyDataSetChanged()
             }
 
@@ -81,6 +87,7 @@ class Countries : AppCompatActivity() {
 
 
     }
+
 
     private fun getViewModel(): CountriesViewModel {
         return ViewModelProviders.of(this, object : ViewModelProvider.Factory {

@@ -14,10 +14,35 @@ import com.bumptech.glide.Glide
 import com.livedata.covid19.R
 import com.livedata.covid19.UI.CountryWiseDataActivity
 import com.livedata.covid19.vo.CountriesResponse
+import com.livedata.covid19.vo.CountriesResponseItem
 import kotlinx.android.synthetic.main.flag_list.view.*
 
 class CustomAdapter(public val context: Context, private val countriesResponse: CountriesResponse) :
     RecyclerView.Adapter<CustomAdapter.MyViewHolder>(), Filterable {
+
+    var country = ArrayList<CountriesResponseItem>()
+    var list_country: ArrayList<CountriesResponseItem>
+    internal var mFilter: NewFilter
+
+    override fun getFilter(): Filter {
+        return mFilter
+    }
+
+    init {
+        list_country = getCountries()
+        country = ArrayList()
+        country.addAll(list_country)
+        mFilter = NewFilter(this@CustomAdapter)
+    }
+
+    private fun getCountries(): ArrayList<CountriesResponseItem> {
+        val list_country = arrayListOf<CountriesResponseItem>()
+        for (list1 in countriesResponse)
+            list_country.add(list1)
+        return list_country
+    }
+
+
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var image: ImageView
@@ -26,15 +51,11 @@ class CustomAdapter(public val context: Context, private val countriesResponse: 
         init {
             image = itemView.cv_iv_country_flag
             cv_tv_country_name = itemView.cv_tv_country_name
-
         }
     }
 
+
     val VIEW_TYPE = 1
-    val NETWORK_VIEW_TYPE = 2
-    var searchableList: ArrayList<CountriesResponse> = arrayListOf()
-    val countries = ArrayList<CountriesResponse>()
-    private var onNothingFound: (() -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         var itemView = LayoutInflater.from(context).inflate(R.layout.flag_list, parent, false)
@@ -42,52 +63,44 @@ class CustomAdapter(public val context: Context, private val countriesResponse: 
     }
 
     override fun getItemCount(): Int {
-        return countriesResponse.size
+        return country.size
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        Glide.with(context).load(countriesResponse[position].countryInfo.flag).into(holder.image)
+        Glide.with(context).load(country[position].countryInfo.flag).into(holder.image)
         holder.itemView.setOnClickListener {
             val intent =
                 Intent(context, CountryWiseDataActivity::class.java).putExtra("position", position)
             context.startActivity(intent)
         }
-        holder.cv_tv_country_name.text = countriesResponse[position].country
+        holder.cv_tv_country_name.text = country[position].country
     }
 
-    override fun getFilter(): Filter {
-        return object : Filter() {
-            private val filterResults = FilterResults()
-            override fun performFiltering(constraint: CharSequence?): FilterResults {
-                searchableList.clear()
-                if (constraint.isNullOrBlank()) {
-                    searchableList.addAll(countries)
-                } else {
-                    val filterPattern = constraint.toString().toLowerCase().trim { it <= ' ' }
-                    for (item in 0..countries.size) {
-                        if (countries[item].get(countries.size).country!!.toLowerCase()
-                                .contains(filterPattern)
-                        ) {
-                            searchableList.add(countries[item])
-                        }
+    inner class NewFilter(var customAdapter: CustomAdapter) : Filter() {
+        override fun performFiltering(constraint: CharSequence?): FilterResults {
+            country.clear()
+            val results = FilterResults()
+            if (constraint.isNullOrEmpty()) {
+                country.addAll(list_country)
+            } else {
+                val filterPattern = constraint.toString().toLowerCase().trim() { it <= ' ' }
+                for (list_country in 0..list_country.size) {
+                    if (countriesResponse[list_country].country.toLowerCase()
+                            .startsWith(filterPattern)
+                    ) {
+                        country.add(countriesResponse[list_country])
                     }
                 }
-                return filterResults.also {
-                    it.values = countries
-                    it.count = countries.size
-                }
             }
 
-            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                if (searchableList.isNullOrEmpty())
-                    onNothingFound?.invoke()
-                notifyDataSetChanged()
-            }
-
+            results.values = country
+            results.count = country.size
+            return results
         }
-    }
 
-    override fun getItemId(position: Int): Long {
-        return countries[position].size.toLong()
+        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            this.customAdapter.notifyDataSetChanged()
+        }
+
     }
 }
