@@ -2,46 +2,31 @@ package com.livedata.covid19.data.repository
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Filter
-import android.widget.Filterable
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
+import androidx.core.view.get
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.livedata.covid19.R
+import com.livedata.covid19.UI.Countries
 import com.livedata.covid19.UI.CountryWiseDataActivity
 import com.livedata.covid19.vo.CountriesResponse
 import com.livedata.covid19.vo.CountriesResponseItem
 import kotlinx.android.synthetic.main.flag_list.view.*
+import java.util.*
+import kotlin.collections.ArrayList
 
-class CustomAdapter(public val context: Context, private val countriesResponse: CountriesResponse) :
+class CustomAdapter(public val context: Context, private var countriesResponse: CountriesResponse) :
     RecyclerView.Adapter<CustomAdapter.MyViewHolder>(), Filterable {
 
-    var country = ArrayList<CountriesResponseItem>()
-    var list_country: ArrayList<CountriesResponseItem>
-    internal var mFilter: NewFilter
-
-    override fun getFilter(): Filter {
-        return mFilter
-    }
+    var countryFilterList = CountriesResponse()
 
     init {
-        list_country = getCountries()
-        country = ArrayList()
-        country.addAll(list_country)
-        mFilter = NewFilter(this@CustomAdapter)
+        countryFilterList = countriesResponse
     }
-
-    private fun getCountries(): ArrayList<CountriesResponseItem> {
-        val list_country = arrayListOf<CountriesResponseItem>()
-        for (list1 in countriesResponse)
-            list_country.add(list1)
-        return list_country
-    }
-
 
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -49,11 +34,12 @@ class CustomAdapter(public val context: Context, private val countriesResponse: 
         var cv_tv_country_name: TextView
 
         init {
-            image = itemView.cv_iv_country_flag
+            //image = itemView.cv_iv_country_flag
+            image = itemView.findViewById(R.id.cv_iv_country_flag)
             cv_tv_country_name = itemView.cv_tv_country_name
+
         }
     }
-
 
     val VIEW_TYPE = 1
 
@@ -63,44 +49,55 @@ class CustomAdapter(public val context: Context, private val countriesResponse: 
     }
 
     override fun getItemCount(): Int {
-        return country.size
+        return countryFilterList.size
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        Glide.with(context).load(country[position].countryInfo.flag).into(holder.image)
+        Glide.with(context).load(countryFilterList[position].countryInfo.flag).into(holder.image)
         holder.itemView.setOnClickListener {
             val intent =
                 Intent(context, CountryWiseDataActivity::class.java).putExtra("position", position)
             context.startActivity(intent)
         }
-        holder.cv_tv_country_name.text = country[position].country
+        holder.cv_tv_country_name.text = countryFilterList[position].country
     }
 
-    inner class NewFilter(var customAdapter: CustomAdapter) : Filter() {
-        override fun performFiltering(constraint: CharSequence?): FilterResults {
-            country.clear()
-            val results = FilterResults()
-            if (constraint.isNullOrEmpty()) {
-                country.addAll(list_country)
-            } else {
-                val filterPattern = constraint.toString().toLowerCase().trim() { it <= ' ' }
-                for (list_country in 0..list_country.size) {
-                    if (countriesResponse[list_country].country.toLowerCase()
-                            .startsWith(filterPattern)
-                    ) {
-                        country.add(countriesResponse[list_country])
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val charSearch = constraint.toString()
+                if (charSearch.isEmpty()) {
+                    countryFilterList = countriesResponse
+                } else {
+                    val resultList = CountriesResponse()
+                    for (row in countriesResponse) {
+                        if (row.country.toLowerCase(Locale.ROOT).contains(
+                                charSearch.toLowerCase(
+                                    Locale.ROOT
+                                )
+                            )
+                        ) {
+                            resultList.add(row)
+                        }
                     }
+                    countryFilterList = resultList
+                    countriesResponse = resultList
                 }
+                val filterResults = FilterResults()
+                filterResults.values = countryFilterList
+                return filterResults
             }
 
-            results.values = country
-            results.count = country.size
-            return results
-        }
+            @Suppress("UNCHECKED_CAST")
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                countryFilterList = results?.values as CountriesResponse
+                notifyDataSetChanged()
+            }
 
-        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            this.customAdapter.notifyDataSetChanged()
         }
-
     }
 }
