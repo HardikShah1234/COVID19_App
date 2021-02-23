@@ -36,6 +36,7 @@ class CountryWiseDataActivity : AppCompatActivity() {
 //
 //        viewModel = getViewModel()
 
+
         val intent = getIntent()
         val position = intent.getIntExtra("position", 0)
         tv_country.text = countryList.get(position).country
