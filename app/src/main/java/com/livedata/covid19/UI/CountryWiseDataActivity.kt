@@ -19,7 +19,7 @@ class CountryWiseDataActivity : AppCompatActivity() {
 
     private lateinit var viewModel: CountriesViewModel
     private lateinit var countryDetailsRepository: CountryDetailsRepository
-    lateinit var countryAdapter: CustomAdapter
+    //lateinit var countryAdapter: CustomAdapter
     private val countriesResponse = ArrayList<CountriesResponse>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
